@@ -1,0 +1,18 @@
+services:
+  volna:
+    build: .
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      PORT: "8000"
+      APP_KEY: "${APP_KEY:-}"
+      MAX_DURATION_SECONDS: "${MAX_DURATION_SECONDS:-1200}"
+      FILE_TTL_SECONDS: "${FILE_TTL_SECONDS:-3600}"
+      MAX_CACHE_MB: "${MAX_CACHE_MB:-512}"
+      DOWNLOAD_WORKERS: "1"
+    restart: unless-stopped
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL

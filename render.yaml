@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: volna-mp3
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    envVars:
+      - key: PORT
+        value: "10000"
+      - key: DOWNLOAD_WORKERS
+        value: "1"
+      - key: MAX_DURATION_SECONDS
+        value: "1200"
+      - key: MAX_CACHE_MB
+        value: "512"
+      - key: FILE_TTL_SECONDS
+        value: "3600"

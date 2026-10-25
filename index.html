@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f2ec">
+  <meta name="description" content="Найди музыку на YouTube и подготовь MP3 в удобном качестве.">
+  <title>Волна — музыка с собой</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#search-input">Перейти к поиску</a>
+  <div class="shell">
+    <header class="header">
+      <a class="brand" href="/" aria-label="Волна — главная">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+        волна<span class="brand-dot">.</span>
+      </a>
+      <nav aria-label="Главная навигация"><a class="nav-active" href="#search-input">Найти музыку</a><a href="#how-it-works">Как это работает <span aria-hidden="true">↗</span></a></nav>
+      <span class="header-note"><span></span> Музыка с собой</span>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="tiny-line"></span> ТВОЙ ЗВУК. ТВОЙ РИТМ.</p>
+          <h1 id="hero-title">Найди трек.<br><em>Забери с собой.</em></h1>
+          <p class="hero-description">Та самая песня — в паре кликов.<br>Введи название или исполнителя, выбери трек и получи MP3.</p>
+        </div>
+        <div class="record-art" aria-hidden="true">
+          <span class="art-label">SIDE A / ТВОЯ ВОЛНА</span>
+          <div class="record"><div class="record-label"><span>в.</span><small>STEREO SOUND<br>33⅓ RPM</small><b></b></div></div>
+          <div class="orbit-caption">Хорошую музыку<br>хочется взять с собой.</div>
+          <span class="art-star">✳</span>
+        </div>
+      </section>
+
+      <section class="search-section" aria-label="Поиск музыки">
+        <form id="search-form">
+          <label class="sr-only" for="search-input">Название песни или исполнитель</label>
+          <div class="search-box">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
+            <input id="search-input" name="query" type="search" placeholder="Название песни или исполнитель" minlength="2" maxlength="160" required autocomplete="off" enterkeyhint="search">
+            <button id="search-button" class="button primary" type="submit"><span>Найти трек</span><span class="button-arrow" aria-hidden="true">↗</span></button>
+          </div>
+        </form>
+        <div class="search-options">
+          <span class="source-label"><svg viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="4" fill="currentColor"/><path d="m8 4 5 3-5 3Z" fill="#f4f2ec"/></svg> Поиск на YouTube</span>
+          <fieldset class="quality"><legend class="sr-only">Битрейт MP3</legend><span aria-hidden="true">Качество MP3</span><label><input type="radio" name="quality" value="128"><span>128</span></label><label><input type="radio" name="quality" value="192" checked><span>192</span></label><label><input type="radio" name="quality" value="320"><span>320</span></label><span>кбит/с</span></fieldset>
+        </div>
+        <form id="key-form" class="key-form" hidden>
+          <label for="app-key">Ключ доступа</label><input id="app-key" type="password" autocomplete="current-password" placeholder="Ключ от владельца сайта"><button class="button small" type="submit">Сохранить</button><span id="key-status" role="status"></span>
+        </form>
+        <div id="notice" class="notice" role="alert" hidden></div>
+      </section>
+
+      <div class="workspace">
+        <section class="results-section" aria-labelledby="results-title">
+          <div class="section-heading"><h2 id="results-title">Начни с любимой песни</h2><span id="result-count" class="mono">01 — ПОИСК</span></div>
+          <div id="search-status" class="sr-only" role="status" aria-live="polite"></div>
+          <div id="results" aria-busy="false">
+            <div class="empty-state">
+              <div class="sound-lines" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+              <h3>Что сегодня в наушниках?</h3>
+              <p>Найди любимый трек или открой что-то новое.<br>Можно начать, например, с этого:</p>
+              <div class="suggestions"><button type="button" data-query="lofi jazz">lo-fi jazz <span>↗</span></button><button type="button" data-query="Chopin nocturne">Chopin nocturne <span>↗</span></button><button type="button" data-query="ambient piano">ambient piano <span>↗</span></button></div>
+            </div>
+          </div>
+          <div id="recent" class="recent" hidden><span class="mono">НЕДАВНО ИСКАЛИ</span><div id="recent-items"></div><button id="clear-recent" type="button">Очистить</button></div>
+        </section>
+
+        <aside class="download-panel" aria-labelledby="download-title">
+          <div class="panel-heading"><h2 id="download-title">Твой MP3</h2><span class="mono">02</span></div>
+          <div id="download-empty" class="download-empty"><span class="download-icon" aria-hidden="true">↓</span><h3>Почти в твоём плейлисте</h3><p>Выбери трек в результатах.<br>Мы подготовим файл для скачивания.</p><span class="file-tag">.MP3</span></div>
+          <div id="download-content" hidden>
+            <div class="selected-track"><img id="selected-cover" alt="" width="64" height="64"><div><h3 id="selected-title"></h3><p id="selected-artist"></p></div></div>
+            <div class="job-heading"><span id="job-label" role="status" aria-live="polite">В очереди</span><span id="job-percent" class="mono">0%</span></div>
+            <progress id="job-progress" max="100" value="0" aria-label="Подготовка MP3"></progress>
+            <p id="job-detail" class="job-detail"></p>
+            <audio id="audio-player" controls preload="none" aria-label="Прослушать готовый трек" hidden></audio>
+            <a id="download-link" class="button primary download-link" download hidden>Скачать MP3 <span aria-hidden="true">↓</span></a>
+            <button id="retry-download" class="button retry" type="button" hidden>Повторить</button>
+          </div>
+          <div class="panel-foot"><span aria-hidden="true">◎</span><p>Файлы хранятся временно.<br><span id="ttl-note">Скачай свой трек в течение часа.</span></p></div>
+        </aside>
+      </div>
+
+      <section id="how-it-works" class="how-it-works" aria-labelledby="how-title">
+        <h2 id="how-title">От названия до наушников.</h2>
+        <div class="steps"><article><span class="step-number">01</span><div><h3>Вспомни название</h3><p>Песня, исполнитель или пара слов для поиска.</p></div></article><article><span class="step-number">02</span><div><h3>Выбери свою версию</h3><p>Оригинал, живое выступление или любимый кавер.</p></div></article><article><span class="step-number">03</span><div><h3>Забери MP3</h3><p>Сохрани файл и слушай в удобном плеере.</p></div></article></div>
+      </section>
+    </main>
+
+    <footer><div class="footer-top"><a class="brand footer-brand" href="/">волна<span class="brand-dot">.</span></a><span>Меньше поисков. Больше музыки.</span><a href="#search-input">Наверх ↑</a></div><p>Скачивай только аудио, на которое у тебя есть права или разрешение. Доступность зависит от YouTube. <span id="limit-note">Треки до 20 минут.</span> Битрейт MP3 не повышает качество исходной записи.</p></footer>
+  </div>
+  <template id="track-template"><article class="track"><span class="track-number mono"></span><img class="track-cover" alt="" loading="lazy" width="64" height="64"><div class="track-info"><h3></h3><p></p><a class="youtube-link" target="_blank" rel="noopener noreferrer">На YouTube ↗</a></div><span class="track-duration mono"></span><button class="button track-download" type="button"><span>MP3</span><span aria-hidden="true">↓</span></button></article></template>
+</body>
+</html>
