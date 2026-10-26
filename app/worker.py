@@ -2,6 +2,7 @@
 import argparse
 import json
 import math
+import os
 import re
 import sys
 import time
@@ -153,19 +154,59 @@ def download(video_id, directory, quality):
     emit(event="complete", size=output.stat().st_size)
 
 
-def friendly_error(error):
+def error_code(error):
     raw = str(error).lower()
     if isinstance(error, ValueError):
-        return str(error)
-    if any(x in raw for x in ["sign in", "not a bot", "captcha", "429", "confirm you"]):
-        return "YouTube ограничил запросы с этого сервера. Попробуйте позже; владельцу сайта может потребоваться другой хостинг."
+        return "INVALID_MEDIA"
+    if any(x in raw for x in ["not a bot", "captcha", "unusual traffic"]):
+        return "YOUTUBE_BOT_CHECK"
+    if re.search(r"(?:http(?: error)?|status(?: code)?)\s*[:=]?\s*429\b", raw) or "too many requests" in raw:
+        return "YOUTUBE_RATE_LIMIT"
     if any(x in raw for x in ["private video", "video unavailable", "not available", "copyright", "removed"]):
-        return "Видео удалено или недоступно на сервере. Выберите другой результат."
+        return "VIDEO_UNAVAILABLE"
+    if any(x in raw for x in ["sign in", "login required", "age-restricted", "confirm your age", "members-only"]):
+        return "LOGIN_REQUIRED"
     if "ffmpeg" in raw or "ffprobe" in raw:
-        return "Сервер не смог обработать аудио. Проверьте установку FFmpeg и ffprobe."
+        return "AUDIO_PROCESSING"
     if any(x in raw for x in ["timed out", "timeout", "resolve", "connection", "network"]):
+        return "NETWORK_ERROR"
+    if "403" in raw and ("http" in raw or "forbidden" in raw):
+        return "UPSTREAM_FORBIDDEN"
+    return "EXTRACTION_FAILED"
+
+
+def friendly_error(error):
+    code = error_code(error)
+    if code == "INVALID_MEDIA":
+        return str(error)
+    if code == "YOUTUBE_BOT_CHECK":
+        return "YouTube требует проверку «не робот» для запросов с сервера. Владельцу сайта нужно проверить доступ сервера к YouTube."
+    if code == "YOUTUBE_RATE_LIMIT":
+        return "YouTube временно ограничил частоту запросов с сервера. Подождите перед следующей попыткой."
+    if code == "VIDEO_UNAVAILABLE":
+        return "Видео удалено или недоступно на сервере. Выберите другой результат."
+    if code == "LOGIN_REQUIRED":
+        return "Для этого видео YouTube требует вход в аккаунт. Выберите общедоступный результат."
+    if code == "AUDIO_PROCESSING":
+        return "Сервер не смог обработать аудио. Проверьте установку FFmpeg и ffprobe."
+    if code == "NETWORK_ERROR":
         return "Нет ответа от YouTube. Попробуйте ещё раз чуть позже."
+    if code == "UPSTREAM_FORBIDDEN":
+        return "YouTube отказал серверу в доступе к аудио (HTTP 403). Владельцу сайта нужно проверить логи загрузки."
     return "Не удалось получить аудио с YouTube. Попробуйте другой результат или обновите yt-dlp на сервере."
+
+
+def diagnostic_detail(error):
+    """Preserve the provider's error without signed URLs or configured secrets."""
+    message = re.sub(r"\x1b\[[0-?]*[ -/]*[@-~]", "", str(error))
+    for name in ("APP_KEY", "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "YTDLP_PROXY"):
+        secret = os.getenv(name)
+        if secret:
+            message = message.replace(secret, "[redacted]")
+    message = re.sub(r"(?im)\b(?:authorization|proxy-authorization|cookie|set-cookie)\s*:[^\r\n]*", "[redacted header]", message)
+    message = re.sub(r"(?i)\b[a-z][a-z0-9+.-]*://[^\s<>]+", "[url]", message)
+    message = re.sub(r"(?i)\b(token|password|passwd|secret|api[_-]?key)\s*[:=]\s*[^\s,;]+", r"\1=[redacted]", message)
+    return " ".join(message.split())[:1200]
 
 
 def main():
@@ -183,7 +224,8 @@ def main():
                 raise ValueError("Не указана папка для файла.")
             download(args.value, args.directory, args.quality)
     except Exception as error:
-        emit(event="error", message=friendly_error(error))
+        emit(event="error", message=friendly_error(error), code=error_code(error),
+             detail=diagnostic_detail(error), yt_dlp_version=yt_dlp.version.__version__)
         sys.exit(1)
 
 

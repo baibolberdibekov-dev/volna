@@ -124,6 +124,11 @@ async def run_worker(arguments, callback, timeout):
         async with asyncio.timeout(timeout):
             while line := await process.stdout.readline():
                 event = json.loads(line)
+                if event.get("event") == "error":
+                    # Internal logs only: callbacks/public job responses receive the friendly message.
+                    log.warning("VOLNA_SOURCE_ERROR mode=%s code=%s yt_dlp=%s detail=%s",
+                                arguments[0], event.get("code", "UNKNOWN"),
+                                event.get("yt_dlp_version", "unknown"), event.get("detail", "unavailable"))
                 callback(event)
             code = await process.wait()
             if code:
@@ -169,6 +174,9 @@ async def lifespan(app):
             remove_directory(path)
     state = State()
     app.state.runtime = state
+    log.warning("VOLNA_START version=1.0.1 ffmpeg_in_path=%s ffprobe_in_path=%s deno_in_path=%s node_in_path=%s ffmpeg_location_configured=%s",
+                bool(shutil.which("ffmpeg")), bool(shutil.which("ffprobe")),
+                bool(shutil.which("deno")), bool(shutil.which("node")), bool(config.FFMPEG_LOCATION))
     sweeper = asyncio.create_task(janitor(state))
     yield
     sweeper.cancel()
@@ -213,7 +221,7 @@ async def authorize(request: Request):
 
 @app.get("/api/health")
 async def health():
-    return {"status": "ok"}
+    return {"status": "ok", "version": "1.0.1"}
 
 
 @app.get("/api/config")
